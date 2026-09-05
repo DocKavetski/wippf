@@ -2,12 +2,14 @@
   min-height: 100vh;
   background-color: var(--bg);
   background-image:
+    radial-gradient(ellipse 90% 55% at 12% -10%, rgba(13, 110, 110, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(226, 61, 42, 0.08), transparent 50%),
     linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 28px 28px;
-  background-position: -1px -1px;
-  padding: 1.25rem 1.25rem 2rem;
-  max-width: 1100px;
+  background-size: auto, auto, 28px 28px, 28px 28px;
+  background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+  padding: 1.35rem 1.35rem 2.5rem;
+  max-width: 1180px;
   margin: 0 auto;
 }
 
@@ -32,17 +34,18 @@
 
 .top h1 {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-size: clamp(1.85rem, 3.4vw, 2.55rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin-bottom: 0.4rem;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 0.45rem;
 }
 
 .lede {
-  max-width: 42rem;
+  max-width: 46rem;
   color: var(--text2);
-  font-size: 0.95rem;
+  font-size: 0.98rem;
+  line-height: 1.55;
 }
 
 .top-meta {
@@ -332,23 +335,35 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-top: 4px solid var(--accent);
-  padding: 1.1rem 1.2rem 1.15rem;
+  padding: 1.25rem 1.3rem 1.4rem;
   line-height: 1.55;
   font-size: 0.94rem;
   position: relative;
   box-shadow: var(--shadow);
+  animation: result-in 0.45s ease-out both;
+}
+
+@keyframes result-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .result-area::before {
-  content: 'РЕЗУЛЬТАТ';
+  content: 'ОТЧЁТ WIPPF';
   position: absolute;
-  top: 0.55rem;
-  right: 0.85rem;
+  top: 0.6rem;
+  right: 0.9rem;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   color: var(--text2);
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .result-area.level-low {
@@ -369,9 +384,10 @@
 }
 
 .visual-verdict {
-  padding: 0.75rem 0.85rem;
+  padding: 1rem 1.05rem;
   border-left: 4px solid var(--border);
-  background: var(--bg2);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, var(--bg2)), var(--bg2));
 }
 
 .visual-verdict-low {
@@ -395,17 +411,18 @@
 
 .visual-verdict-title {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: clamp(1.25rem, 2.4vw, 1.55rem);
   font-weight: 700;
-  line-height: 1.25;
-  margin-bottom: 0.35rem;
+  line-height: 1.2;
+  margin-bottom: 0.45rem;
 }
 
 .visual-verdict-text {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 0.92rem;
+  line-height: 1.55;
   color: var(--text2);
+  max-width: 62rem;
 }
 
 .visual-indices {
@@ -566,32 +583,224 @@
   background: var(--danger);
 }
 
-.wippf-recs {
-  padding: 0.75rem 0.85rem;
+.section-kicker {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.25rem;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+}
+
+.section-lede {
+  margin: 0 0 0.85rem;
+  font-size: 0.88rem;
+  color: var(--text2);
+  max-width: 48rem;
+  line-height: 1.5;
+}
+
+.dims-panel,
+.conflict-viz,
+.analysis-panel,
+.focus-panel,
+.atlas-panel {
+  padding-top: 0.35rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.dims-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.dim-block {
   border: 1px solid var(--border);
   background: var(--bg2);
+  padding: 0.85rem 0.9rem;
+}
+
+.dim-block-head h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.dim-block-head p {
+  font-size: 0.8rem;
+  color: var(--text2);
+  margin-bottom: 0.7rem;
+  line-height: 1.4;
+}
+
+.dim-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.dim-row-top {
+  display: grid;
+  grid-template-columns: 2rem 1fr auto;
+  gap: 0.4rem;
+  align-items: baseline;
+  margin-bottom: 0.2rem;
+}
+
+.dim-id {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+
+.dim-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.dim-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.dim-val small {
+  font-weight: 500;
+  color: var(--text2);
+  font-size: 0.75rem;
+}
+
+.dim-track {
+  height: 0.42rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 65%, transparent);
+  overflow: hidden;
+}
+
+.dim-track > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--ink)));
+  transition: width 0.5s ease;
+}
+
+.dim-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  color: var(--text2);
+}
+
+.dim-scale-note {
+  margin: 0.7rem 0 0;
+  font-size: 0.7rem;
+  color: var(--text2);
+}
+
+.conflict-grid {
+  margin-top: 0.15rem;
+}
+
+.analysis-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.analysis-card {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  background: var(--surface);
+  padding: 0.85rem 0.95rem;
+  animation: card-in 0.4s ease both;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.analysis-card header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 0.45rem;
+}
+
+.analysis-num {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  opacity: 0.85;
+  padding-top: 0.15rem;
+}
+
+.analysis-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+
+.analysis-lead {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text2);
+  font-weight: 600;
+}
+
+.analysis-body {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.wippf-recs {
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--accent) 7%, var(--bg2)), var(--bg2));
 }
 
 .wippf-recs-list {
-  margin: 0.35rem 0 0;
-  padding-left: 1.15rem;
+  margin: 0.55rem 0 0;
+  padding-left: 1.2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  font-size: 0.88rem;
-  line-height: 1.45;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .wippf-interp-list {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.65rem;
 }
 
 .wippf-interp-card {
   border: 1px solid var(--border);
   border-left: 4px solid var(--border);
-  padding: 0.65rem 0.75rem;
+  padding: 0.8rem 0.9rem;
   background: var(--surface);
 }
 
@@ -610,8 +819,8 @@
   justify-content: space-between;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 0.3rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.92rem;
 }
 
 .wippf-interp-card header span {
@@ -620,27 +829,159 @@
   color: var(--text2);
 }
 
+.wippf-interp-poles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  margin: 0 0 0.4rem;
+  font-size: 0.74rem;
+  color: var(--text2);
+}
+
 .wippf-interp-meaning {
-  margin: 0 0 0.25rem;
-  font-size: 0.78rem;
+  margin: 0 0 0.3rem;
+  font-size: 0.8rem;
   color: var(--text2);
   font-style: italic;
 }
 
 .wippf-interp-text {
-  margin: 0 0 0.35rem;
-  font-size: 0.88rem;
-  line-height: 1.4;
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .wippf-interp-rec {
   margin: 0;
-  font-size: 0.86rem;
-  line-height: 1.4;
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .wippf-interp-rec span {
   font-weight: 700;
+}
+
+.group-head {
+  margin-bottom: 0.55rem;
+}
+
+.group-desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text2);
+  line-height: 1.4;
+  max-width: 52rem;
+}
+
+.atlas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.atlas-item {
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.atlas-item.level-low {
+  border-top-color: var(--success);
+}
+.atlas-item.level-moderate {
+  border-top-color: var(--warning);
+}
+.atlas-item.level-high {
+  border-top-color: var(--danger);
+}
+
+.atlas-toggle {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 4.2rem 1fr auto auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.55rem 0.7rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.atlas-toggle:hover {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.atlas-code {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.atlas-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.atlas-score {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text2);
+}
+
+.atlas-chevron {
+  width: 1.4rem;
+  height: 1.4rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text2);
+}
+
+.atlas-mini-track {
+  height: 0.28rem;
+  margin: 0 0.7rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 70%, transparent);
+  overflow: hidden;
+}
+
+.atlas-mini-track > i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.atlas-item.level-low .atlas-mini-track > i {
+  background: var(--success);
+}
+.atlas-item.level-moderate .atlas-mini-track > i {
+  background: var(--warning);
+}
+.atlas-item.level-high .atlas-mini-track > i {
+  background: var(--danger);
+}
+
+.atlas-detail {
+  padding: 0 0.85rem 0.8rem;
+  border-top: 1px dashed var(--border);
+  padding-top: 0.65rem;
+  margin: 0 0.15rem;
+}
+
+.atlas-dims {
+  margin: 0.45rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text2);
+}
+
+.atlas-item.open {
+  box-shadow: 0 8px 24px rgba(18, 21, 28, 0.06);
 }
 
 .foot {
@@ -651,6 +992,12 @@
   color: var(--text2);
 }
 
+@media (max-width: 860px) {
+  .dims-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 720px) {
   .top {
     flex-direction: column;
@@ -658,6 +1005,14 @@
 
   .visual-indices {
     grid-template-columns: 1fr !important;
+  }
+
+  .atlas-toggle {
+    grid-template-columns: 3.4rem 1fr auto;
+  }
+
+  .atlas-score {
+    display: none;
   }
 
   .blank-opt-label {

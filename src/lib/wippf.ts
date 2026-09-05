@@ -1,5 +1,10 @@
 import type { Level } from '../types'
-import { buildWippfRecommendations, pickScaleInterp } from './wippfInterpret'
+import {
+  buildWippfAnalysis,
+  buildWippfRecommendations,
+  pickScaleInterp,
+  type WippfAnalysisSection,
+} from './wippfInterpret'
 
 /** Диапазон сырых баллов одной шкалы (3 пункта × 1–4) */
 export const WIPPF_SCALE_MIN = 3
@@ -339,6 +344,8 @@ export interface WippfReport {
   summary: string
   /** Рекомендации по профилю */
   recommendations: string[]
+  /** Целостный нарративный анализ по блокам */
+  analysis: WippfAnalysisSection[]
 }
 
 export function wippfBand(score: number): WippfBand {
@@ -427,26 +434,33 @@ export function computeWippf(answers: number[]): WippfReport {
     verdict = 'Есть контрастные полюса профиля'
   }
 
-  const extremeText = extremes.length
-    ? extremes
-        .slice(0, 8)
-        .map((s) => `${s.code} ${s.score} (${s.flag})`)
-        .join('; ')
-    : 'без крайних шкал'
+  const analysis = buildWippfAnalysis(
+    scales,
+    extremes,
+    high,
+    low,
+    conflict,
+    secondary,
+    primary,
+    model,
+    agg,
+  )
 
+  const overview = analysis.find((s) => s.id === 'overview')
   const conclusion =
-    `Ориентиры: 3–5 слабо, 6–9 баланс, 10–12 выражено. ` +
+    (overview ? `${overview.lead} ${overview.body} ` : '') +
     (conflictTop
       ? `В конфликте заметнее всего: ${conflictTop.name} (${conflictTop.score}/12). `
       : '') +
-    `Крайние шкалы: ${extremeText}. ` +
-    `Сравнение норм: a=${a}, r=${r}, k=${k} (11–44); отношений: e=${e}, w=${w}, i=${i} (8–32).`
+    `Нормы a/r/k = ${a}/${r}/${k} (11–44); отношения e/w/i = ${e}/${w}/${i} (8–32). ` +
+    'Ориентиры шкал: 3–5 слабо, 6–9 баланс, 10–12 выражено.'
 
   const summary =
     `WIPPF 2.0: ${verdict.toLowerCase()}. ` +
     `Крайних шкал ${extremes.length} (↑${high.length} / ↓${low.length}). ` +
     (conflictTop ? `Конфликт: ${conflictTop.code} ${conflictTop.score}/12. ` : '') +
-    `a/r/k ${a}/${r}/${k}; e/w/i ${e}/${w}/${i}.`
+    `a/r/k ${a}/${r}/${k}; e/w/i ${e}/${w}/${i}. ` +
+    (overview ? overview.lead : '')
 
   const recommendations = buildWippfRecommendations(scales, extremes, conflict, agg)
 
@@ -465,6 +479,7 @@ export function computeWippf(answers: number[]): WippfReport {
     conclusion,
     summary,
     recommendations,
+    analysis,
   }
 }
 

@@ -294,6 +294,221 @@ function skew(a: number, b: number, threshold: number): boolean {
   return Math.abs(a - b) >= threshold
 }
 
+export interface WippfAnalysisSection {
+  id: string
+  title: string
+  lead: string
+  body: string
+}
+
+function fmtList(items: WippfScaleScore[], limit = 4): string {
+  if (!items.length) return 'нет выраженных'
+  return items
+    .slice(0, limit)
+    .map((s) => `«${s.name}» (${s.score})`)
+    .join(', ')
+}
+
+function compareTriple(
+  labels: [string, string, string],
+  values: [number, number, number],
+  threshold: number,
+): string {
+  const [la, lb, lc] = labels
+  const [va, vb, vc] = values
+  const ranked = [
+    { l: la, v: va },
+    { l: lb, v: vb },
+    { l: lc, v: vc },
+  ].sort((x, y) => y.v - x.v)
+  const top = ranked[0]
+  const bot = ranked[2]
+  const spread = top.v - bot.v
+  if (spread < threshold) {
+    return `Измерения ${la}, ${lb} и ${lc} относительно близки (${va}/${vb}/${vc}) — выраженного перекоса нет.`
+  }
+  return `Доминирует ${top.l} (${top.v}), слабее всего ${bot.l} (${bot.v}); разброс ${spread} баллов. Это важный ориентир для разговора о внутренних стандартах.`
+}
+
+/** Целостный клинический нарратив по блокам профиля */
+export function buildWippfAnalysis(
+  _scales: WippfScaleScore[],
+  extremes: WippfScaleScore[],
+  high: WippfScaleScore[],
+  low: WippfScaleScore[],
+  conflict: WippfScaleScore[],
+  secondary: WippfScaleScore[],
+  primary: WippfScaleScore[],
+  model: WippfScaleScore[],
+  agg: WippfAgg[],
+): WippfAnalysisSection[] {
+  const byId = Object.fromEntries(agg.map((x) => [x.id, x.value]))
+  const a = byId.a ?? 0
+  const r = byId.r ?? 0
+  const k = byId.k ?? 0
+  const e = byId.e ?? 0
+  const w = byId.w ?? 0
+  const i = byId.i ?? 0
+
+  const conflictSorted = [...conflict].sort((x, y) => y.score - x.score)
+  const conflictTop = conflictSorted[0]
+  const conflictLow = conflictSorted[conflictSorted.length - 1]
+
+  const overviewLead =
+    extremes.length === 0
+      ? 'Профиль выглядит относительно ровным: крайних полюсов почти нет.'
+      : extremes.length >= 8
+        ? `Профиль контрастный: ${extremes.length} крайних шкал (↑${high.length} / ↓${low.length}).`
+        : `В профиле есть заметные полюса: ${extremes.length} крайних шкал (↑${high.length} / ↓${low.length}).`
+
+  const overviewBody = [
+    high.length
+      ? `Выражены: ${fmtList(high, 5)}.`
+      : 'Выраженных (10–12) шкал нет — доминируют умеренные или слабые полюса.',
+    low.length
+      ? `Слабо выражены: ${fmtList(low, 5)}.`
+      : 'Слабых (3–5) шкал нет.',
+    conflictTop
+      ? `В модели баланса при конфликте заметнее сфера «${conflictTop.name}» (${conflictTop.score}/12)${
+          conflictLow && conflictLow.id !== conflictTop.id
+            ? `, слабее — «${conflictLow.name}» (${conflictLow.score}/12)`
+            : ''
+        }.`
+      : '',
+    'Низкий и высокий балл — это полюса ценностей и стилей, а не «плохо/хорошо». Читайте картину целиком и в контексте жалобы.',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const secHigh = secondary.filter((s) => s.level === 'high')
+  const secLow = secondary.filter((s) => s.level === 'low')
+  const secondaryBody = [
+    'Вторичные способности — социальные нормы и «правила игры»: порядок, вежливость, усердие, справедливость и др.',
+    secHigh.length || secLow.length
+      ? `На полюсах: ${
+          [
+            secHigh.length ? `выражено — ${fmtList(secHigh, 4)}` : '',
+            secLow.length ? `слабо — ${fmtList(secLow, 4)}` : '',
+          ]
+            .filter(Boolean)
+            .join('; ')
+        }.`
+      : 'По вторичным шкалам выраженных крайностей мало — нормы выглядят гибкими.',
+    compareTriple(['своё поведение (a)', 'ожидания к другим (r)', 'идеалы (k)'], [a, r, k], 5),
+    skew(k, a, 6) && k > a
+      ? 'Идеалы выше поведения: типичный фон самокритики («должен — не получается»).'
+      : skew(a, k, 6) && a > k
+        ? 'Поведение выше заявленных идеалов: возможен бунт против норм или обесценивание принципов.'
+        : skew(r, a, 6) && r > a
+          ? 'Ожидания к другим выше требований к себе — частый источник претензий и разочарований.'
+          : 'Соотношение a/r/k без резкого перекоса — полезно уточнить, где нормы всё же «трут» в отношениях.',
+  ].join(' ')
+
+  const priHigh = primary.filter((s) => s.level === 'high')
+  const priLow = primary.filter((s) => s.level === 'low')
+  const primaryBody = [
+    'Первичные способности — эмоциональный и отношенческий «фундамент»: терпение, время, доверие, любовь, смысл.',
+    priHigh.length || priLow.length
+      ? `На полюсах: ${
+          [
+            priHigh.length ? `выражено — ${fmtList(priHigh, 4)}` : '',
+            priLow.length ? `слабо — ${fmtList(priLow, 4)}` : '',
+          ]
+            .filter(Boolean)
+            .join('; ')
+        }.`
+      : 'Первичный блок относительно уравновешен.',
+    compareTriple(['к себе (e)', 'к другим (w)', 'как идеал (i)'], [e, w, i], 4),
+    skew(w, e, 5) && w > e
+      ? 'Внимание к другим сильнее заботы о себе — риск самозабвения.'
+      : skew(e, w, 5) && e > w
+        ? 'Опора на себя сильнее, чем отклик к другим — проверьте, не закрывает ли это близость.'
+        : skew(i, e, 5) && i > e
+          ? 'Идеал отношений выше самоотношения — часто рядом со сниженной самоценностью.'
+          : 'Баланс e/w/i относительно устойчив; имеет смысл спросить, где человек чувствует нехватку тепла или смысла.',
+  ].join(' ')
+
+  const conflictBody = [
+    'Четыре сферы модели баланса показывают, куда «убегает» психика при конфликте: тело, деятельность, контакты, фантазия/смысл.',
+    conflictSorted
+      .map((s) => {
+        const pack = pickScaleInterp(s.id, s.level)
+        return `«${s.name}» ${s.score}/12 (${s.flag}): ${pack.text}`
+      })
+      .join(' '),
+    conflictTop && conflictTop.level === 'high'
+      ? `Ведущая реакция — через «${conflictTop.name}». Это точка входа для позитивной интерпретации и работы с актуальным конфликтом.`
+      : 'Ярко доминирующей конфликтной сферы нет — уточните актуальный стресс через все четыре области.',
+  ].join(' ')
+
+  const modelHigh = model.filter((s) => s.level === 'high')
+  const modelLow = model.filter((s) => s.level === 'low')
+  const modelBody = [
+    'Модельные измерения отражают усвоенные образы отношений: Я–мать, Я–отец, значимые другие, союз родителей (Ты), отношение семьи к миру (Мы) и ценностный фон (Пра-Мы).',
+    modelHigh.length || modelLow.length
+      ? `Заметные полюса модели: ${
+          [
+            modelHigh.length ? `тепло/выраженность — ${fmtList(modelHigh, 4)}` : '',
+            modelLow.length ? `дистанция/слабость — ${fmtList(modelLow, 4)}` : '',
+          ]
+            .filter(Boolean)
+            .join('; ')
+        }.`
+      : 'Модель отношений выглядит относительно ровной — полезно всё равно спросить о ключевых фигурах детства.',
+    'Эти шкалы помогают понять, откуда взялись актуальные нормы и эмоциональные ожидания, а не «оправдывают» текущее поведение.',
+  ].join(' ')
+
+  const focus = extremes.length ? extremes : conflictSorted
+  const focusBody = focus
+    .slice(0, 6)
+    .map((s) => {
+      const pack = pickScaleInterp(s.id, s.level)
+      return `«${s.name}» (${s.score}/12, ${s.flag}). ${pack.meaning} Сейчас: ${pack.text}`
+    })
+    .join(' ')
+
+  return [
+    {
+      id: 'overview',
+      title: 'Общий взгляд',
+      lead: overviewLead,
+      body: overviewBody,
+    },
+    {
+      id: 'secondary',
+      title: 'Нормы и вторичные способности',
+      lead: `a/r/k = ${a}/${r}/${k} (диапазон 11–44)`,
+      body: secondaryBody,
+    },
+    {
+      id: 'primary',
+      title: 'Отношения и первичные способности',
+      lead: `e/w/i = ${e}/${w}/${i} (диапазон 8–32)`,
+      body: primaryBody,
+    },
+    {
+      id: 'conflict',
+      title: 'Реакции на конфликт (модель баланса)',
+      lead: conflictTop
+        ? `Ведущая сфера: ${conflictTop.name} (${conflictTop.score}/12)`
+        : 'Четыре сферы конфликта',
+      body: conflictBody,
+    },
+    {
+      id: 'model',
+      title: 'Модель отношений',
+      lead: 'Образы значимых фигур и семейного фона',
+      body: modelBody,
+    },
+    {
+      id: 'focus',
+      title: extremes.length ? 'Фокус разбора — крайние шкалы' : 'Фокус разбора — конфликтные сферы',
+      lead: `${Math.min(6, focus.length)} ключевых точек для беседы`,
+      body: focusBody || 'Явных точек фокуса мало — опирайтесь на жалобу и модель баланса.',
+    },
+  ]
+}
+
 export function buildWippfRecommendations(
   scales: WippfScaleScore[],
   extremes: WippfScaleScore[],

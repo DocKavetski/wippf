@@ -113,7 +113,13 @@ export default function App() {
   async function handleCopy() {
     if (!report) return
     try {
-      await navigator.clipboard.writeText(report.summary)
+      const analysisText = report.analysis
+        .map((b) => `${b.title}\n${b.lead}\n${b.body}`)
+        .join('\n\n')
+      const recText = report.recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')
+      const full =
+        `${report.summary}\n\n${report.conclusion}\n\n--- Анализ ---\n${analysisText}\n\n--- Рекомендации ---\n${recText}`
+      await navigator.clipboard.writeText(full)
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2000)
     } catch {
@@ -125,16 +131,16 @@ export default function App() {
     <div className="app">
       <header className="top">
         <div>
-          <p className="eyebrow">Клиницист · подсчёт</p>
+          <p className="eyebrow">Позитивная психотерапия · клиницист</p>
           <h1>WIPPF 2.0</h1>
           <p className="lede">
-            Висбаденский опросник позитивной психотерапии и семейной терапии. Ввод строки цифр или
-            бланк — мгновенный профиль 27 шкал и измерений a/r/k, e/w/i.
+            Висбаденский опросник: профиль 27 шкал, измерениярения a/r/k и e/w/i, разбор конфликта и модели
+            отношений — с описаниями, анализом и рекомендациями для беседы.
           </p>
         </div>
         <div className="top-meta">
           <span className="pill">88 пунктов</span>
-          <span className="pill">1–4</span>
+          <span className="pill">анализ</span>
           <span className="pill">локально</span>
         </div>
       </header>
