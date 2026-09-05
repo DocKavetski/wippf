@@ -5,6 +5,11 @@ import {
   pickScaleInterp,
   type WippfAnalysisSection,
 } from './wippfInterpret'
+import {
+  buildResearchInsights,
+  researchRecLines,
+  type WippfResearchInsight,
+} from './wippfResearch'
 
 /** Диапазон сырых баллов одной шкалы (3 пункта × 1–4) */
 export const WIPPF_SCALE_MIN = 3
@@ -346,6 +351,8 @@ export interface WippfReport {
   recommendations: string[]
   /** Целостный нарративный анализ по блокам */
   analysis: WippfAnalysisSection[]
+  /** Эмпирический контекст (исследования WIPPF) */
+  research: WippfResearchInsight[]
 }
 
 export function wippfBand(score: number): WippfBand {
@@ -463,6 +470,8 @@ export function computeWippf(answers: number[]): WippfReport {
     (overview ? overview.lead : '')
 
   const recommendations = buildWippfRecommendations(scales, extremes, conflict, agg)
+  const research = buildResearchInsights(scales, primary, secondary, conflict, model)
+  recommendations.push(...researchRecLines(research))
 
   return {
     scales,
@@ -480,6 +489,7 @@ export function computeWippf(answers: number[]): WippfReport {
     summary,
     recommendations,
     analysis,
+    research,
   }
 }
 

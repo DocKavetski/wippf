@@ -116,9 +116,12 @@ export default function App() {
       const analysisText = report.analysis
         .map((b) => `${b.title}\n${b.lead}\n${b.body}`)
         .join('\n\n')
+      const researchText = report.research
+        .map((r) => `${r.topic} (${r.cite})\n${r.finding}\n→ ${r.implication}`)
+        .join('\n\n')
       const recText = report.recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')
       const full =
-        `${report.summary}\n\n${report.conclusion}\n\n--- Анализ ---\n${analysisText}\n\n--- Рекомендации ---\n${recText}`
+        `${report.summary}\n\n${report.conclusion}\n\n--- Анализ ---\n${analysisText}\n\n--- Исследования ---\n${researchText}\n\n--- Рекомендации ---\n${recText}`
       await navigator.clipboard.writeText(full)
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2000)
@@ -134,13 +137,13 @@ export default function App() {
           <p className="eyebrow">Позитивная психотерапия · клиницист</p>
           <h1>WIPPF 2.0</h1>
           <p className="lede">
-            Висбаденский опросник: профиль 27 шкал, измерениярения a/r/k и e/w/i, разбор конфликта и модели
-            отношений — с описаниями, анализом и рекомендациями для беседы.
+            Профиль способностей, кристалл баланса и мгновенный разбор: проблемные зоны, ресурсы и
+            рекомендации для беседы.
           </p>
         </div>
         <div className="top-meta">
           <span className="pill">88 пунктов</span>
-          <span className="pill">анализ</span>
+          <span className="pill">модель баланса</span>
           <span className="pill">локально</span>
         </div>
       </header>
