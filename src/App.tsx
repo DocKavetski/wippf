@@ -46,6 +46,7 @@ export default function App() {
   const [mode, setMode] = useState<Mode>('string')
   const [copied, setCopied] = useState(false)
   const [draftError, setDraftError] = useState<string | null>(null)
+  const [printBlankRequested, setPrintBlankRequested] = useState(false)
 
   useEffect(() => {
     try {
@@ -54,6 +55,21 @@ export default function App() {
       /* ignore */
     }
   }, [cells])
+
+  useEffect(() => {
+    if (!printBlankRequested) return
+    if (mode !== 'blank') {
+      setMode('blank')
+      return
+    }
+    const id = window.requestAnimationFrame(() => {
+      document.body.classList.add('print-blank')
+      window.print()
+      document.body.classList.remove('print-blank')
+      setPrintBlankRequested(false)
+    })
+    return () => window.cancelAnimationFrame(id)
+  }, [printBlankRequested, mode])
 
   const complete = cells.every((c) => c != null)
   const report = useMemo(() => {
@@ -130,15 +146,19 @@ export default function App() {
     }
   }
 
+  function handlePrintBlank() {
+    setPrintBlankRequested(true)
+  }
+
   return (
     <div className="app">
       <header className="top">
         <div>
-          <p className="eyebrow">Клиницист · WIPPF 2.0</p>
-          <h1>Ввод → приоритеты</h1>
+          <p className="eyebrow">WIPPF 2.0 · понятный разбор</p>
+          <h1>Введите ответы — всё объясним</h1>
           <p className="lede">
-            Вставьте 88 ответов — сразу увидите, куда смотреть первым, теплокарту профиля и модель
-            баланса.
+            После 88 цифр: куда смотреть сначала, модель баланса, и шкалы «от полюса к полюсу» с
+            пояснениями простым языком.
           </p>
         </div>
         <div className="top-meta">
@@ -163,6 +183,9 @@ export default function App() {
           >
             Бланк
           </button>
+          <button type="button" className="btn ghost print-blank-btn" onClick={handlePrintBlank}>
+            Печать бланка
+          </button>
         </div>
 
         {mode === 'string' ? (
@@ -175,13 +198,22 @@ export default function App() {
           />
         ) : (
           <section className="blank-section">
-            <div className="blank-toolbar">
+            <div className="blank-toolbar no-print">
               <p>
                 Заполнено: <strong>{digitsLen}/{WIPPF_LEN}</strong>
               </p>
-              <button type="button" className="btn ghost" onClick={handleClear}>
-                Очистить бланк
-              </button>
+              <div className="blank-toolbar-actions">
+                <button type="button" className="btn ghost" onClick={handlePrintBlank}>
+                  Печать бланка
+                </button>
+                <button type="button" className="btn ghost" onClick={handleClear}>
+                  Очистить бланк
+                </button>
+              </div>
+            </div>
+            <div className="blank-print-title print-only">
+              <h2>WIPPF 2.0 — бланк ответов</h2>
+              <p>4 — да · 3 — скорее да · 2 — скорее нет · 1 — нет. Отметьте один вариант в каждой строке.</p>
             </div>
             <BlankMatrix answers={cells} onChange={handleBlankChange} />
           </section>

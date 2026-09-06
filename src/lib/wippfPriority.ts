@@ -9,20 +9,41 @@ export type PriorityItem = {
   scoreLabel?: string
 }
 
-function skewOf(agg: WippfAgg[], threshold: number): { text: string; top: WippfAgg; bot: WippfAgg } | null {
-  if (agg.length < 2) return null
-  const sorted = [...agg].sort((a, b) => b.value - a.value)
+function plainSkew(
+  items: WippfAgg[],
+  threshold: number,
+  family: 'norms' | 'relations',
+): { title: string; detail: string } | null {
+  if (items.length < 2) return null
+  const sorted = [...items].sort((a, b) => b.value - a.value)
   const top = sorted[0]
   const bot = sorted[sorted.length - 1]
   if (top.value - bot.value < threshold) return null
+
+  if (family === 'norms') {
+    const map: Record<string, string> = {
+      a: 'как вы сами соблюдаете правила',
+      r: 'чего вы ждёте от других',
+      k: 'ваши идеалы и принципы',
+    }
+    return {
+      title: `Нормы: сильнее «${top.name}», слабее «${bot.name}»`,
+      detail: `Перекос: ${map[top.id] ?? top.name} (${top.value}) заметно выше, чем ${map[bot.id] ?? bot.name} (${bot.value}). Это частый источник внутреннего напряжения или претензий.`,
+    }
+  }
+
+  const map: Record<string, string> = {
+    e: 'отношение к себе',
+    w: 'отношение к другим',
+    i: 'идеал отношений',
+  }
   return {
-    top,
-    bot,
-    text: `${top.id.toUpperCase()} ${top.value} ≫ ${bot.id.toUpperCase()} ${bot.value}`,
+    title: `Отношения: сильнее «${top.name}», слабее «${bot.name}»`,
+    detail: `Перекос: ${map[top.id] ?? top.name} (${top.value}) выше, чем ${map[bot.id] ?? bot.name} (${bot.value}). Имеет смысл спросить, где не хватает тепла или границ.`,
   }
 }
 
-/** Ранжированный список: куда смотреть первым */
+/** Ранжированный список понятным языком */
 export function buildPriorities(report: WippfReport): PriorityItem[] {
   const items: Omit<PriorityItem, 'rank'>[] = []
   const norms = report.agg.filter((x) => ['a', 'r', 'k'].includes(x.id))
@@ -35,57 +56,38 @@ export function buildPriorities(report: WippfReport): PriorityItem[] {
     return db - da
   })
 
+  if (conflictTop && (conflictTop.level === 'high' || conflictTop.level === 'low')) {
+    items.push({
+      id: `cf-${conflictTop.id}`,
+      title: `В конфликте уходите в «${conflictTop.name}»`,
+      detail: conflictTop.interpretation,
+      kind: 'conflict',
+      scoreLabel: `${conflictTop.score} из 12`,
+    })
+  }
+
   for (const s of extremes.slice(0, 4)) {
+    if (items.some((i) => i.id === `cf-${s.id}` || i.id === `ex-${s.id}`)) continue
     items.push({
       id: `ex-${s.id}`,
-      title: s.name,
-      detail: s.interpretation,
+      title: s.level === 'high' ? `Сильно выражено: ${s.name}` : `Слабо выражено: ${s.name}`,
+      detail: `${s.meaning} Сейчас: ${s.interpretation}`,
       kind: s.level === 'high' ? 'high' : 'low',
-      scoreLabel: `${s.score}/12 · ${s.flag}`,
+      scoreLabel: `${s.score} из 12`,
     })
   }
 
-  if (conflictTop && (conflictTop.level === 'high' || conflictTop.level === 'low')) {
-    const already = items.some((i) => i.id === `ex-${conflictTop.id}`)
-    if (!already) {
-      items.unshift({
-        id: `cf-${conflictTop.id}`,
-        title: `Конфликт → ${conflictTop.name}`,
-        detail: conflictTop.interpretation,
-        kind: 'conflict',
-        scoreLabel: `${conflictTop.score}/12`,
-      })
-    } else {
-      // bump conflict extreme to front conceptually by tagging
-      const idx = items.findIndex((i) => i.id === `ex-${conflictTop.id}`)
-      if (idx > 0) {
-        const [row] = items.splice(idx, 1)
-        items.unshift({ ...row, kind: 'conflict', title: `Конфликт → ${conflictTop.name}` })
-      }
-    }
-  }
-
-  const skN = skewOf(norms, 6)
+  const skN = plainSkew(norms, 6, 'norms')
   if (skN) {
-    items.push({
-      id: 'skew-ark',
-      title: `Перекос норм ${skN.text}`,
-      detail: `${skN.top.name} заметно выше, чем ${skN.bot.name}.`,
-      kind: 'skew',
-    })
+    items.push({ id: 'skew-ark', title: skN.title, detail: skN.detail, kind: 'skew' })
   }
-  const skE = skewOf(relations, 5)
+  const skE = plainSkew(relations, 5, 'relations')
   if (skE) {
-    items.push({
-      id: 'skew-ewi',
-      title: `Перекос отношений ${skE.text}`,
-      detail: `${skE.top.name} заметно выше, чем ${skE.bot.name}.`,
-      kind: 'skew',
-    })
+    items.push({ id: 'skew-ewi', title: skE.title, detail: skE.detail, kind: 'skew' })
   }
 
   const researchHit = report.research.find((r) => r.salience === 'high' && r.id !== 'caveat')
-  if (researchHit && items.length < 6) {
+  if (researchHit && items.length < 5) {
     items.push({
       id: `rs-${researchHit.id}`,
       title: researchHit.topic,
@@ -97,13 +99,13 @@ export function buildPriorities(report: WippfReport): PriorityItem[] {
   if (!items.length) {
     items.push({
       id: 'balanced',
-      title: 'Профиль без ярких крайностей',
-      detail: 'Смотрите нюансы модели баланса и сравнение a/r/k · e/w/i.',
+      title: 'Профиль относительно ровный',
+      detail: 'Ярких крайностей мало. Смотрите модель баланса и шкалы ниже — там всё равно есть нюансы для беседы.',
       kind: 'skew',
     })
   }
 
-  return items.slice(0, 6).map((item, i) => ({ ...item, rank: i + 1 }))
+  return items.slice(0, 5).map((item, i) => ({ ...item, rank: i + 1 }))
 }
 
 export function resourceScales(report: WippfReport): WippfScaleScore[] {
