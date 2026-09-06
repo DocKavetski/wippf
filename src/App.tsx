@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BlankMatrix } from './components/BlankMatrix'
+import { CoupleView } from './components/CoupleView'
 import { InputPanel } from './components/InputPanel'
 import { WippfResult } from './components/WippfResult'
 import {
@@ -13,7 +14,8 @@ import { computeWippf } from './lib/wippf'
 import './App.css'
 
 const STORAGE_KEY = 'wippf-clinician-cells'
-type Mode = 'string' | 'blank'
+type InputMode = 'string' | 'blank'
+type Workspace = 'solo' | 'couple'
 
 function emptyCells(): Array<number | null> {
   return Array.from({ length: WIPPF_LEN }, () => null)
@@ -41,9 +43,10 @@ function cellsToDraft(cells: Array<number | null>): string {
 }
 
 export default function App() {
+  const [workspace, setWorkspace] = useState<Workspace>('solo')
   const [cells, setCells] = useState<Array<number | null>>(loadCells)
   const [draft, setDraft] = useState(() => cellsToDraft(loadCells()))
-  const [mode, setMode] = useState<Mode>('string')
+  const [mode, setMode] = useState<InputMode>('string')
   const [copied, setCopied] = useState(false)
   const [draftError, setDraftError] = useState<string | null>(null)
   const [printBlankRequested, setPrintBlankRequested] = useState(false)
@@ -58,6 +61,10 @@ export default function App() {
 
   useEffect(() => {
     if (!printBlankRequested) return
+    if (workspace !== 'solo') {
+      setWorkspace('solo')
+      return
+    }
     if (mode !== 'blank') {
       setMode('blank')
       return
@@ -69,7 +76,7 @@ export default function App() {
       setPrintBlankRequested(false)
     })
     return () => window.cancelAnimationFrame(id)
-  }, [printBlankRequested, mode])
+  }, [printBlankRequested, mode, workspace])
 
   const complete = cells.every((c) => c != null)
   const report = useMemo(() => {
@@ -94,7 +101,6 @@ export default function App() {
       setCopied(false)
       return
     }
-    // Частичный ввод: заполняем префикс, остальное пусто
     if (digits.length < WIPPF_LEN && [...digits].every((d) => d >= '1' && d <= '4')) {
       const next = emptyCells()
       for (let i = 0; i < digits.length; i++) next[i] = Number(digits[i])
@@ -146,19 +152,16 @@ export default function App() {
     }
   }
 
-  function handlePrintBlank() {
-    setPrintBlankRequested(true)
-  }
-
   return (
     <div className="app">
-      <header className="top">
+      <header className="top no-print">
         <div>
-          <p className="eyebrow">WIPPF 2.0 · понятный разбор</p>
-          <h1>Введите ответы — всё объясним</h1>
+          <p className="eyebrow">WIPPF 2.0 · клиницист</p>
+          <h1>{workspace === 'couple' ? 'Сравнение пары' : 'Индивидуальный разбор'}</h1>
           <p className="lede">
-            После 88 цифр: куда смотреть сначала, модель баланса, и шкалы «от полюса к полюсу» с
-            пояснениями простым языком.
+            {workspace === 'couple'
+              ? 'Два профиля рядом: личный фокус каждого и зоны трения пары — противоположные полюса, конфликт, ожидания.'
+              : 'После 88 цифр: куда смотреть сначала, модель баланса и шкалы «от полюса к полюсу».'}
           </p>
         </div>
         <div className="top-meta">
@@ -168,66 +171,103 @@ export default function App() {
       </header>
 
       <main className="stage">
-        <div className="mode-tabs no-print">
+        <div className="workspace-tabs no-print">
           <button
             type="button"
-            className={mode === 'string' ? 'tab on' : 'tab'}
-            onClick={() => setMode('string')}
+            className={workspace === 'solo' ? 'tab on' : 'tab'}
+            onClick={() => setWorkspace('solo')}
           >
-            Строка ответов
+            Один человек
           </button>
           <button
             type="button"
-            className={mode === 'blank' ? 'tab on' : 'tab'}
-            onClick={() => setMode('blank')}
+            className={workspace === 'couple' ? 'tab on' : 'tab'}
+            onClick={() => setWorkspace('couple')}
           >
-            Бланк
-          </button>
-          <button type="button" className="btn ghost print-blank-btn" onClick={handlePrintBlank}>
-            Печать бланка
+            Пара
           </button>
         </div>
 
-        {mode === 'string' ? (
-          <InputPanel
-            value={draft}
-            digits={cleanDigits(draft)}
-            error={draftError && cleanDigits(draft).length !== WIPPF_LEN ? draftError : null}
-            onChange={applyDigitString}
-            onClear={handleClear}
-          />
+        {workspace === 'couple' ? (
+          <CoupleView />
         ) : (
-          <section className="blank-section">
-            <div className="blank-toolbar no-print">
-              <p>
-                Заполнено: <strong>{digitsLen}/{WIPPF_LEN}</strong>
-              </p>
-              <div className="blank-toolbar-actions">
-                <button type="button" className="btn ghost" onClick={handlePrintBlank}>
-                  Печать бланка
-                </button>
-                <button type="button" className="btn ghost" onClick={handleClear}>
-                  Очистить бланк
-                </button>
-              </div>
+          <>
+            <div className="mode-tabs no-print">
+              <button
+                type="button"
+                className={mode === 'string' ? 'tab on' : 'tab'}
+                onClick={() => setMode('string')}
+              >
+                Строка ответов
+              </button>
+              <button
+                type="button"
+                className={mode === 'blank' ? 'tab on' : 'tab'}
+                onClick={() => setMode('blank')}
+              >
+                Бланк
+              </button>
+              <button
+                type="button"
+                className="btn ghost print-blank-btn"
+                onClick={() => setPrintBlankRequested(true)}
+              >
+                Печать бланка
+              </button>
             </div>
-            <div className="blank-print-title print-only">
-              <h2>WIPPF 2.0 — бланк ответов</h2>
-              <p>4 — да · 3 — скорее да · 2 — скорее нет · 1 — нет. Отметьте один вариант в каждой строке.</p>
-            </div>
-            <BlankMatrix answers={cells} onChange={handleBlankChange} />
-          </section>
-        )}
 
-        {report ? (
-          <WippfResult report={report} onCopy={handleCopy} copied={copied} />
-        ) : (
-          <div className="result-placeholder">
-            <p>
-              Чтобы увидеть профиль, введите все <strong>{WIPPF_LEN}</strong> ответа (цифры 1–4).
-            </p>
-            <p className="muted">Данные сохраняются только в этом браузере.</p>
-          </div>
+            {mode === 'string' ? (
+              <InputPanel
+                value={draft}
+                digits={cleanDigits(draft)}
+                error={draftError && cleanDigits(draft).length !== WIPPF_LEN ? draftError : null}
+                onChange={applyDigitString}
+                onClear={handleClear}
+              />
+            ) : (
+              <section className="blank-section">
+                <div className="blank-toolbar no-print">
+                  <p>
+                    Заполнено:{' '}
+                    <strong>
+                      {digitsLen}/{WIPPF_LEN}
+                    </strong>
+                  </p>
+                  <div className="blank-toolbar-actions">
+                    <button
+                      type="button"
+                      className="btn ghost"
+                      onClick={() => setPrintBlankRequested(true)}
+                    >
+                      Печать бланка
+                    </button>
+                    <button type="button" className="btn ghost" onClick={handleClear}>
+                      Очистить бланк
+                    </button>
+                  </div>
+                </div>
+                <div className="blank-print-title print-only">
+                  <h2>WIPPF 2.0 — бланк ответов</h2>
+                  <p>
+                    4 — да · 3 — скорее да · 2 — скорее нет · 1 — нет. Отметьте один вариант в каждой
+                    строке.
+                  </p>
+                </div>
+                <BlankMatrix answers={cells} onChange={handleBlankChange} />
+              </section>
+            )}
+
+            {report ? (
+              <WippfResult report={report} onCopy={handleCopy} copied={copied} />
+            ) : (
+              <div className="result-placeholder no-print">
+                <p>
+                  Чтобы увидеть профиль, введите все <strong>{WIPPF_LEN}</strong> ответа (цифры 1–4).
+                </p>
+                <p className="muted">Данные сохраняются только в этом браузере.</p>
+              </div>
+            )}
+          </>
         )}
       </main>
 

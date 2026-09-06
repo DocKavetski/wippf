@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import type { WippfAgg, WippfReport, WippfScaleScore } from '../lib/wippf'
 import { BalanceDiamond } from './BalanceDiamond'
 import { buildPriorities, resourceScales } from '../lib/wippfPriority'
+import { PrintReport } from './PrintReport'
 
 const GROUP_META: Record<
   WippfScaleScore['group'],
@@ -282,8 +283,15 @@ export function WippfResult({ report, onCopy, copied }: Props) {
   const norms = report.agg.filter((x) => ['a', 'r', 'k'].includes(x.id))
   const relations = report.agg.filter((x) => ['e', 'w', 'i'].includes(x.id))
 
+  function handlePrint() {
+    document.body.classList.add('print-solo')
+    window.print()
+    document.body.classList.remove('print-solo')
+  }
+
   return (
-    <div className="result-area visual-result">
+    <>
+    <div className="result-area visual-result screen-only">
       <div className="result-topbar no-print">
         <div className="result-topbar-meta">
           <strong>{report.verdict}</strong>
@@ -295,7 +303,7 @@ export function WippfResult({ report, onCopy, copied }: Props) {
           <button type="button" className="btn" onClick={onCopy}>
             {copied ? 'Скопировано' : 'Копировать'}
           </button>
-          <button type="button" className="btn ghost" onClick={() => window.print()}>
+          <button type="button" className="btn ghost" onClick={handlePrint}>
             Печать
           </button>
         </div>
@@ -421,5 +429,7 @@ export function WippfResult({ report, onCopy, copied }: Props) {
         Балл шкалы: 3–5 слабо · 6–9 баланс · 10–12 выражено. Отчёт — ориентир для разговора, не диагноз.
       </p>
     </div>
+    <PrintReport report={report} />
+    </>
   )
 }
