@@ -134,16 +134,15 @@ export default function App() {
     <div className="app">
       <header className="top">
         <div>
-          <p className="eyebrow">Позитивная психотерапия · клиницист</p>
-          <h1>WIPPF 2.0</h1>
+          <p className="eyebrow">Клиницист · WIPPF 2.0</p>
+          <h1>Ввод → приоритеты</h1>
           <p className="lede">
-            Профиль способностей, кристалл баланса и мгновенный разбор: проблемные зоны, ресурсы и
-            рекомендации для беседы.
+            Вставьте 88 ответов — сразу увидите, куда смотреть первым, теплокарту профиля и модель
+            баланса.
           </p>
         </div>
         <div className="top-meta">
-          <span className="pill">88 пунктов</span>
-          <span className="pill">модель баланса</span>
+          <span className="pill">88 · 1–4</span>
           <span className="pill">локально</span>
         </div>
       </header>

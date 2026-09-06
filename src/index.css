@@ -1,38 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
 :root {
   --font-display: 'Bricolage Grotesque', 'Avenir Next Condensed', sans-serif;
   --font-ui: 'IBM Plex Sans', 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', 'Cascadia Mono', monospace;
 
-  --ink: #14201c;
-  --chalk: #eef3ef;
-  --paper: #fbfaf6;
-  --sand: #f3eee4;
-  --teal: #0b6b63;
-  --teal-deep: #08554f;
-  --coral: #d6453a;
-  --coral-soft: #f4d4cf;
-  --resource: #2a7a4b;
-  --resource-soft: #d5eadc;
-  --warn: #b8860b;
-  --danger: #c0392b;
+  --ink: #1a1d21;
+  --paper: #ffffff;
+  --bg: #f0f2f4;
+  --bg2: #e6e9ed;
+  --surface: #ffffff;
+  --border: #c5ccd4;
+  --text: #1a1d21;
+  --text2: #5c6670;
 
-  --bg: #e8efe9;
-  --bg2: var(--sand);
-  --surface: var(--paper);
-  --border: #c9d2cb;
-  --text: var(--ink);
-  --text2: #5a6a62;
-  --primary: var(--coral);
-  --success: var(--resource);
-  --warning: var(--warn);
-  --accent: var(--teal);
-  --attention: var(--coral);
-  --attention-bg: var(--coral-soft);
-  --resource-bg: var(--resource-soft);
-  --shadow: 0 20px 48px rgba(20, 32, 28, 0.09);
-  --grid: rgba(20, 32, 28, 0.04);
+  --high: #c62828;
+  --high-bg: #fdecea;
+  --low: #e65100;
+  --low-bg: #fff3e0;
+  --mid: #2e7d32;
+  --mid-bg: #e8f5e9;
+  --skew: #1565c0;
+  --skew-bg: #e3f2fd;
+  --accent: #1565c0;
+
+  --attention: var(--high);
+  --attention-bg: var(--high-bg);
+  --resource: var(--mid);
+  --resource-bg: var(--mid-bg);
+  --success: var(--mid);
+  --warning: var(--low);
+  --danger: var(--high);
+  --primary: var(--high);
+  --teal: var(--accent);
+  --coral: var(--high);
+  --chalk: #f5f7fa;
+  --shadow: 0 1px 0 rgba(26, 29, 33, 0.06), 0 8px 24px rgba(26, 29, 33, 0.06);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -53,7 +56,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -67,7 +70,6 @@ textarea {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
