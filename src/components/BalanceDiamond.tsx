@@ -22,7 +22,7 @@ export function BalanceDiamond({ conflict }: Props) {
   const byId = Object.fromEntries(conflict.map((s) => [s.id, s]))
   const cx = 160
   const cy = 160
-  const maxR = 108
+  const maxR = 100
   const idealR = scoreToRadius(7.5, maxR)
 
   const points = AXES.map((axis) => {
@@ -37,8 +37,8 @@ export function BalanceDiamond({ conflict }: Props) {
       name: scale?.name ?? axis.label,
       x: cx + axis.x * r,
       y: cy + axis.y * r,
-      lx: cx + axis.x * (maxR + 28),
-      ly: cy + axis.y * (maxR + 28),
+      lx: cx + axis.x * (maxR + 36),
+      ly: cy + axis.y * (maxR + 36),
     }
   })
 
@@ -89,25 +89,17 @@ export function BalanceDiamond({ conflict }: Props) {
           {/* profile */}
           <polygon className="diamond-profile" points={profile} fill="url(#diamondFill)" />
 
-          {/* points + labels */}
+          {/* points + labels (баллы — в карточках справа, не на ромбе) */}
           {points.map((p) => (
             <g key={p.id} className={`diamond-point level-${p.level}`}>
               <circle cx={p.x} cy={p.y} r="5.5" />
               <text
                 x={p.lx}
-                y={p.ly - (p.y < cy ? 6 : p.y > cy ? 2 : -4)}
+                y={p.ly + (p.y < cy ? -2 : p.y > cy ? 12 : 4)}
                 textAnchor={p.x < cx - 2 ? 'end' : p.x > cx + 2 ? 'start' : 'middle'}
                 className="diamond-label"
               >
                 {p.label}
-              </text>
-              <text
-                x={p.lx}
-                y={p.ly + (p.y < cy ? 8 : p.y > cy ? 16 : 10)}
-                textAnchor={p.x < cx - 2 ? 'end' : p.x > cx + 2 ? 'start' : 'middle'}
-                className="diamond-score"
-              >
-                {p.score}/12 · {p.flag}
               </text>
             </g>
           ))}

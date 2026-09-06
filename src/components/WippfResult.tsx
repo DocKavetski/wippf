@@ -81,16 +81,19 @@ function Spectrum({ scale }: { scale: WippfScaleScore }) {
       </header>
       <p className="spectrum-meaning">{scale.meaning}</p>
       <div className="spectrum-track-wrap">
+        <div className="spectrum-ruler" aria-hidden>
+          <span>3–5 слабо</span>
+          <span>6–9 баланс</span>
+          <span>10–12 выражено</span>
+        </div>
         <div className="spectrum-track" aria-hidden>
           <div className="spectrum-gradient" />
-          <div className="spectrum-zones">
-            <span className="z-low">3–5</span>
-            <span className="z-mid">6–9</span>
-            <span className="z-high">10–12</span>
-          </div>
-          <div className="spectrum-marker" style={{ left: `${pct}%` }}>
-            <i />
-            <em>{scale.score}</em>
+          <div
+            className="spectrum-marker"
+            style={{ left: `clamp(0.75rem, ${pct}%, calc(100% - 0.75rem))` }}
+          >
+            <span className="spectrum-marker-label">{scale.score}</span>
+            <i className="spectrum-marker-dot" />
           </div>
         </div>
         <div className="spectrum-poles">

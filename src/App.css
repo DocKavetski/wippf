@@ -726,21 +726,47 @@
 }
 
 .spectrum-track-wrap {
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.spectrum-ruler {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.25rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: 0.02em;
+}
+
+.spectrum-ruler span:nth-child(1) {
+  text-align: left;
+  color: var(--low);
+}
+
+.spectrum-ruler span:nth-child(2) {
+  text-align: center;
+  color: var(--mid);
+}
+
+.spectrum-ruler span:nth-child(3) {
+  text-align: right;
+  color: var(--high);
 }
 
 .spectrum-track {
   position: relative;
-  height: 1.5rem;
-  margin-bottom: 0.45rem;
+  height: 2.4rem;
+  margin: 0 0.15rem 0.55rem;
 }
 
 .spectrum-gradient {
   position: absolute;
   left: 0;
   right: 0;
-  top: 0.45rem;
-  height: 0.55rem;
+  top: 1.15rem;
+  height: 0.5rem;
   border-radius: 999px;
   background: linear-gradient(
     90deg,
@@ -752,22 +778,6 @@
   );
 }
 
-.spectrum-zones {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  pointer-events: none;
-}
-
-.spectrum-zones span {
-  font-size: 0.62rem;
-  color: var(--text2);
-  align-self: end;
-  text-align: center;
-  opacity: 0.75;
-}
-
 .spectrum-marker {
   position: absolute;
   top: 0;
@@ -775,35 +785,57 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 1;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.spectrum-marker i {
-  width: 0.85rem;
-  height: 0.85rem;
-  border-radius: 50%;
+.spectrum-marker-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 1.35rem;
+  text-align: center;
+  padding: 0.18rem 0.28rem;
+  border-radius: 0.25rem;
   background: var(--ink);
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-  margin-top: 0.3rem;
+  color: #fff;
+  margin-bottom: 0.2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 
-.spectrum.level-high .spectrum-marker i {
+.spectrum.level-high .spectrum-marker-label {
   background: var(--high);
 }
-.spectrum.level-low .spectrum-marker i {
+
+.spectrum.level-low .spectrum-marker-label {
   background: var(--low);
 }
-.spectrum.level-moderate .spectrum-marker i {
+
+.spectrum.level-moderate .spectrum-marker-label {
   background: var(--mid);
 }
 
-.spectrum-marker em {
-  font-style: normal;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  margin-top: 0.1rem;
+.spectrum-marker-dot {
+  display: block;
+  width: 0.78rem;
+  height: 0.78rem;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+}
+
+.spectrum.level-high .spectrum-marker-dot {
+  background: var(--high);
+}
+
+.spectrum.level-low .spectrum-marker-dot {
+  background: var(--low);
+}
+
+.spectrum.level-moderate .spectrum-marker-dot {
+  background: var(--mid);
 }
 
 .spectrum-poles {
